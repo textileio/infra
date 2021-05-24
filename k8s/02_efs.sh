@@ -57,7 +57,7 @@ terraform apply -var aws_region=$AWS_REGION -var fs_subnet_id_zone_a=$subnetIdZo
 
 export EFS_DNSNAME=`terraform output dns_name`
 
-fsId=`terraform output filesystem_id`
+fsId=`terraform output filesystem_id | tr -d \"`
 
 popd
 
