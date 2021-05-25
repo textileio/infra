@@ -5,15 +5,6 @@ set -o pipefail
 set -e
 
 # Validate required arguments
-if [ -z "$CLUSTER_SPEC_TEMPLATE" ]
-then
-  echo -e "Please provider cluster spec template file as argument. For example: \`./01_install.sh cluster.yaml\`"
-  exit 2
-fi
-if [ ! -f "$CLUSTER_SPEC_TEMPLATE" ]; then
-    echo "Provided cluster spec file \"$1\" doesn't exist"
-    exit 2
-fi
 if [ -z "$CLUSTER_NAME" ]
 then
   echo -e "Environment variable CLUSTER_NAME must be set."
@@ -39,9 +30,19 @@ then
   echo -e "Environment variable ZONE_B must be set."
   exit 2
 fi
-if [ -z "$AWS_REGION" ]
+if [ -z "$CLOUD_PROVIDER" ]
 then
-  echo -e "Environment variable AWS_REGION must be set."
+  echo -e "Environment variable CLOUD_PROVIDER must be set."
+  exit 2
+fi
+if [ -z "$IMAGE_NAME" ]
+then
+  echo -e "Environment variable IMAGE_NAME must be set."
+  exit 2
+fi
+if [ -z "$REGION" ]
+then
+  echo -e "Environment variable REGION must be set."
   exit 2
 fi
 if [ -z "$WORKER_NODE_TYPE" ]

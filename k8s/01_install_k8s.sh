@@ -15,8 +15,6 @@ START_TIME=`date +%s`
 echo "Creating cluster for Testground..."
 echo
 
-CLUSTER_SPEC_TEMPLATE=$1
-
 my_dir="$(dirname "$0")"
 source "$my_dir/install-playbook/validation.sh"
 
@@ -25,17 +23,32 @@ echo "------------------"
 echo "Deployment name (DEPLOYMENT_NAME): $DEPLOYMENT_NAME"
 echo "Cluster name (CLUSTER_NAME): $CLUSTER_NAME"
 echo "Kops state store (KOPS_STATE_STORE): $KOPS_STATE_STORE"
-echo "AWS availability zone A (ZONE_A): $ZONE_A"
-echo "AWS availability zone B (ZONE_B): $ZONE_B"
-echo "AWS region (AWS_REGION): $AWS_REGION"
-echo "AWS worker node type (WORKER_NODE_TYPE): $WORKER_NODE_TYPE"
-echo "AWS master node type (MASTER_NODE_TYPE): $MASTER_NODE_TYPE"
+echo "Cloud provider (CLOUD_PROVIDER): $CLOUD_PROVIDER"
+echo "Cloud provider region (REGION): $REGION"
+echo "Cloud image name (IMAGE_NAME): $IMAGE_NAME"
+echo "Availability zone A (ZONE_A): $ZONE_A"
+echo "Availability zone B (ZONE_B): $ZONE_B"
+echo "Worker node type (WORKER_NODE_TYPE): $WORKER_NODE_TYPE"
+echo "Master node type (MASTER_NODE_TYPE): $MASTER_NODE_TYPE"
 echo "Worker nodes (WORKER_NODES): $WORKER_NODES"
 echo "Public key (PUBKEY): $PUBKEY"
 echo
 
+if [ "$CLOUD_PROVIDER" == "aws" ]
+then
+  export INFRA_NODE_TYPE="c5.2xlarge"
+elif [ "$CLOUD_PROVIDER" == "gce" ]
+then
+  export INFRA_NODE_TYPE="e2-standard-4"
+  export KOPS_FEATURE_FLAGS=AlphaAllowGCE
+  export GCE_PROJECT=`gcloud config get-value project`
+else
+  echo "Unsupported cloud provider: $CLOUD_PROVIDER"
+  exit 2
+fi
+
 CLUSTER_SPEC=$(mktemp)
-envsubst <$CLUSTER_SPEC_TEMPLATE >$CLUSTER_SPEC
+cat "$my_dir/cluster.yaml" "$my_dir/cluster-$CLOUD_PROVIDER.yaml" "$my_dir/instance-group.yaml" | envsubst >$CLUSTER_SPEC
 
 # Verify with the user before continuing.
 echo

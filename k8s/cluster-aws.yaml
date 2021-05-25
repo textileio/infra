@@ -1,0 +1,12 @@
+  cloudProvider: aws
+  networkCIDR: 172.20.0.0/16
+  subnets:
+    - cidr: 172.20.32.0/19
+      name: ${ZONE_A}
+      type: Public
+      zone: ${ZONE_A}
+    - cidr: 172.20.64.0/19
+      name: ${ZONE_B}
+      type: Public
+      zone: ${ZONE_B}
+
