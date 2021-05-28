@@ -94,7 +94,8 @@ popd
 
 echo "Installing InfluxDB"
 pushd influxdb
-helm install influxdb bitnami/influxdb -f ./values.yaml
+# explicitly install the last version supporting InfluxDB 1.x, to align with testground/sdk-go
+helm install influxdb bitnami/influxdb --version 1.1.9 -f ./values.yaml
 popd
 
 

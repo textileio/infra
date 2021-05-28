@@ -6,6 +6,18 @@ metadata:
 spec:
   docker:
     skipInstall: true
+  # clusterAutoscaler:
+  #   enabled: true
+  #   expander: least-waste
+  #   balanceSimilarNodeGroups: false
+  #   scaleDownUtilizationThreshold: "0.5"
+  #   skipNodesWithLocalStorage: true
+  #   skipNodesWithSystemPods: true
+  #   newPodScaleUpDelay: 0s
+  #   scaleDownDelayAfterAdd: 1m0s
+  #   image: ${IMAGE_NAME}
+  #   cpuRequest: "100m"
+  #   memoryRequest: "300Mi"
   cloudLabels:
     Team: ${TEAM}
     Project: ${PROJECT}

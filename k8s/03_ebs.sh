@@ -37,13 +37,10 @@ popd
 
 echo "Got volume id for Testground datadir: $TG_EBS_DATADIR_VOLUME_ID"
 
-EBS_PV=$(mktemp)
-envsubst <./ebs/pv.yml.spec >$EBS_PV
+EBS_SPEC=$(mktemp)
+envsubst <./ebs.yml.spec >$EBS_SPEC
 
-kubectl apply -f ./ebs/storageclass.yml \
-              -f $EBS_PV \
-              -f ./ebs/pvc.yml
-
+kubectl apply -f $EBS_SPEC
 
 echo "EBS volume for Testground daemon is ready"
 echo
