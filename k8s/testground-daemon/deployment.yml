@@ -75,10 +75,11 @@ spec:
             subPath: .env.toml
         resources:
           requests:
-            memory: 2048Mi
-            cpu: 2000m
+            memory: 1024Mi
+            cpu: 1000m
           limits:
             memory: 2048Mi
+            cpu: 2000m
       volumes:
         - name: efs-pvc
           persistentVolumeClaim:

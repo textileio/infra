@@ -18,8 +18,8 @@ S3_BUCKET="${KOPS_STATE_STORE:5:100}"
 
 terraform init -backend-config=bucket=$S3_BUCKET \
                -backend-config=key=${DEPLOYMENT_NAME}-ebs \
-               -backend-config=region=$AWS_REGION
+               -backend-config=region=$REGION
 
-terraform destroy -var aws_region=$AWS_REGION -var aws_availability_zone=${AWS_REGION}a -auto-approve
+terraform destroy -var aws_region=$REGION -var aws_availability_zone=${REGION}a -auto-approve
 
 popd

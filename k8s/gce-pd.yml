@@ -1,0 +1,44 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: testground-daemon-datadir-pvc
+  labels:
+    type: gce-pd
+spec:
+  storageClassName: "gce-pd-retain"
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: testground-daemon-datadir-pv
+  labels:
+    type: gce-pd
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: "gce-pd-retain"
+  gcePersistentDisk:
+    pdName: testground-daemon-datadir
+    fsType: ext4
+
+---
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: gce-pd-retain
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-standard
+  fstype: ext4
+  replication-type: none
+reclaimPolicy: Retain

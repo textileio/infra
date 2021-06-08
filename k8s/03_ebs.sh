@@ -27,23 +27,20 @@ pushd ebs-terraform
 
 terraform init -backend-config=bucket=$S3_BUCKET \
                -backend-config=key=${DEPLOYMENT_NAME}-ebs \
-               -backend-config=region=$AWS_REGION
+               -backend-config=region=$REGION
 
-terraform apply -var aws_region=$AWS_REGION -var aws_availability_zone=${AWS_REGION}a -auto-approve
+terraform apply -var aws_region=$REGION -var aws_availability_zone=${REGION}a -auto-approve
 
-export TG_EBS_DATADIR_VOLUME_ID="aws://`terraform output availability_zone`/`terraform output volume_id`"
+export TG_EBS_DATADIR_VOLUME_ID="`terraform output volume_id`"
 
 popd
 
 echo "Got volume id for Testground datadir: $TG_EBS_DATADIR_VOLUME_ID"
 
-EBS_PV=$(mktemp)
-envsubst <./ebs/pv.yml.spec >$EBS_PV
+EBS_SPEC=$(mktemp)
+envsubst <./ebs.yml.spec >$EBS_SPEC
 
-kubectl apply -f ./ebs/storageclass.yml \
-              -f $EBS_PV \
-              -f ./ebs/pvc.yml
-
+kubectl apply -f $EBS_SPEC
 
 echo "EBS volume for Testground daemon is ready"
 echo

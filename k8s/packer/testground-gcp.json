@@ -1,0 +1,20 @@
+  {
+  "variables": {
+    "gcp_zone": "us-east4-a",
+  },
+  "builders": [{
+      "type": "googlecompute",
+      "project_id": "testground-textile",
+      "source_image": "ubuntu-2004-focal-v20210510",
+      "machine_type": "n1-standard-1",
+      "ssh_username": "ubuntu",
+      "zone": "{{gcp_zone}}"
+      "image_name": "testground_{{isotime \"2006-01-02\"}}"
+  }],
+  "provisioners": [
+  {
+    "type": "shell",
+    "script": "docker-pull-images.sh"
+  }
+  ]
+}

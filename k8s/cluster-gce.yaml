@@ -1,0 +1,9 @@
+  cloudProvider: gce
+  subnets:
+    - name: ${ZONE_A}
+      type: Public
+      region: ${REGION}
+    - name: ${ZONE_B}
+      type: Public
+      region: ${REGION}
+  project: ${GCE_PROJECT}

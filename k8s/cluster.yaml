@@ -6,6 +6,18 @@ metadata:
 spec:
   docker:
     skipInstall: true
+  # clusterAutoscaler:
+  #   enabled: true
+  #   expander: least-waste
+  #   balanceSimilarNodeGroups: false
+  #   scaleDownUtilizationThreshold: "0.5"
+  #   skipNodesWithLocalStorage: true
+  #   skipNodesWithSystemPods: true
+  #   newPodScaleUpDelay: 0s
+  #   scaleDownDelayAfterAdd: 1m0s
+  #   image: ${IMAGE_NAME}
+  #   cpuRequest: "100m"
+  #   memoryRequest: "300Mi"
   cloudLabels:
     Team: ${TEAM}
     Project: ${PROJECT}
@@ -28,7 +40,6 @@ spec:
   authorization:
     rbac: {}
   channel: stable
-  cloudProvider: aws
   configBase: ${KOPS_STATE_STORE}/${CLUSTER_NAME}
   docker:
     defaultUlimit:
@@ -36,13 +47,13 @@ spec:
   etcdClusters:
   - cpuRequest: 200m
     etcdMembers:
-    - instanceGroup: master-${ZONE}
+    - instanceGroup: master-${REGION}
       name: a
     memoryRequest: 100Mi
     name: main
   - cpuRequest: 100m
     etcdMembers:
-    - instanceGroup: master-${ZONE}
+    - instanceGroup: master-${REGION}
       name: a
     memoryRequest: 100Mi
     name: events
@@ -88,155 +99,14 @@ spec:
   kubernetesVersion: 1.18.10
   masterInternalName: api.internal.${CLUSTER_NAME}
   masterPublicName: api.${CLUSTER_NAME}
-  networkCIDR: 172.20.0.0/16
   networking:
     flannel:
       backend: vxlan
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
-  subnets:
-  - cidr: 172.20.32.0/19
-    name: ${ZONE_A}
-    type: Public
-    zone: ${ZONE_A}
-  - cidr: 172.20.64.0/19
-    name: ${ZONE_B}
-    type: Public
-    zone: ${ZONE_B}
   topology:
     dns:
       type: Public
     masters: public
     nodes: public
-
----
-
-apiVersion: kops.k8s.io/v1alpha2
-kind: InstanceGroup
-metadata:
-  creationTimestamp: null
-  labels:
-    kops.k8s.io/cluster: ${CLUSTER_NAME}
-  name: master-${ZONE}
-spec:
-  additionalUserData:
-  - name: myscript.sh
-    type: text/x-shellscript
-    content: |
-      #!/bin/sh
-      cat <<EOT >> /etc/sysctl.d/999-testground.conf
-      net.core.somaxconn = 131072
-      net.netfilter.nf_conntrack_max = 1048576
-      net.ipv4.tcp_max_syn_backlog = 131072
-      net.core.netdev_max_backlog = 524288
-      net.ipv4.ip_local_port_range = 10000 65535
-      net.ipv4.tcp_tw_recycle = 1
-      net.ipv4.tcp_tw_reuse = 1
-      net.core.rmem_max = 4194304
-      net.core.wmem_max = 4194304
-      net.ipv4.tcp_mem = 262144 524288 1572864
-      net.ipv4.tcp_rmem = 16384 131072 4194304
-      net.ipv4.tcp_wmem = 16384 131072 4194304
-      net.ipv4.neigh.default.gc_thresh2 = 4096
-      net.ipv4.neigh.default.gc_thresh3 = 32768
-      EOT
-  image: 909427826938/testground_2020-10-30
-  machineType: ${MASTER_NODE_TYPE}
-  maxSize: 1
-  minSize: 1
-  nodeLabels:
-    kops.k8s.io/instancegroup: master-${ZONE_A}
-  role: Master
-  subnets:
-  - ${ZONE_A}
-
----
-
-apiVersion: kops.k8s.io/v1alpha2
-kind: InstanceGroup
-metadata:
-  creationTimestamp: null
-  labels:
-    kops.k8s.io/cluster: ${CLUSTER_NAME}
-  name: nodes
-spec:
-  additionalUserData:
-  - name: myscript.sh
-    type: text/x-shellscript
-    content: |
-      #!/bin/sh
-      cat <<EOT >> /etc/sysctl.d/999-testground.conf
-      net.core.somaxconn = 131072
-      net.netfilter.nf_conntrack_max = 1048576
-      net.ipv4.tcp_max_syn_backlog = 131072
-      net.core.netdev_max_backlog = 524288
-      net.ipv4.ip_local_port_range = 10000 65535
-      net.ipv4.tcp_tw_recycle = 1
-      net.ipv4.tcp_tw_reuse = 1
-      net.core.rmem_max = 4194304
-      net.core.wmem_max = 4194304
-      net.ipv4.tcp_mem = 262144 524288 1572864
-      net.ipv4.tcp_rmem = 16384 131072 4194304
-      net.ipv4.tcp_wmem = 16384 131072 4194304
-      net.ipv4.neigh.default.gc_thresh2 = 4096
-      net.ipv4.neigh.default.gc_thresh3 = 32768
-      EOT
-  cloudLabels:
-    testground.node.role.plan: "true"
-  image: 909427826938/testground_2020-10-30
-  machineType: ${WORKER_NODE_TYPE}
-  maxSize: ${WORKER_NODES}
-  minSize: ${WORKER_NODES}
-  nodeLabels:
-    kops.k8s.io/instancegroup: nodes
-    testground.node.role.plan: "true"
-  role: Node
-  subnets:
-  - ${ZONE_A}
-  - ${ZONE_B}
-
----
-
-apiVersion: kops.k8s.io/v1alpha2
-kind: InstanceGroup
-metadata:
-  creationTimestamp: null
-  labels:
-    kops.k8s.io/cluster: ${CLUSTER_NAME}
-  name: tginfra
-spec:
-  additionalUserData:
-  - name: myscript.sh
-    type: text/x-shellscript
-    content: |
-      #!/bin/sh
-      cat <<EOT >> /etc/sysctl.d/999-testground.conf
-      net.core.somaxconn = 131072
-      net.netfilter.nf_conntrack_max = 1048576
-      net.ipv4.tcp_max_syn_backlog = 131072
-      net.core.netdev_max_backlog = 524288
-      net.ipv4.ip_local_port_range = 10000 65535
-      net.ipv4.tcp_tw_recycle = 1
-      net.ipv4.tcp_tw_reuse = 1
-      net.core.rmem_max = 4194304
-      net.core.wmem_max = 4194304
-      net.ipv4.tcp_mem = 262144 524288 1572864
-      net.ipv4.tcp_rmem = 16384 131072 4194304
-      net.ipv4.tcp_wmem = 16384 131072 4194304
-      net.ipv4.neigh.default.gc_thresh2 = 4096
-      net.ipv4.neigh.default.gc_thresh3 = 32768
-      EOT
-  cloudLabels:
-    testground.node.role.infra: "true"
-  image: 909427826938/testground_2020-10-30
-  machineType: c5.2xlarge
-  maxSize: 2
-  minSize: 2
-  nodeLabels:
-    kops.k8s.io/instancegroup: tginfra
-    testground.node.role.infra: "true"
-  role: Node
-  subnets:
-  - ${ZONE_A}
-  - ${ZONE_B}
